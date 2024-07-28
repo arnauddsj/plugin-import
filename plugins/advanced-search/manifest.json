@@ -1,0 +1,6 @@
+{
+  "name": "advanced-search",
+  "version": "1.0.0",
+  "serverEntry": "server.ts",
+  "clientEntry": "AdvancedSearch.vue"
+}
