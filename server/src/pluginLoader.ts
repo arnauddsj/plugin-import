@@ -1,6 +1,10 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { FastifyInstance } from 'fastify'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 interface Plugin {
   name: string
@@ -23,29 +27,23 @@ export class PluginLoader {
       const manifestPath = path.join(pluginDir, folder, 'manifest.json')
       if (fs.existsSync(manifestPath)) {
         try {
-          const manifestContent = fs.readFileSync(manifestPath, 'utf8')
-          const manifest = JSON.parse(manifestContent)
-
-          if (!manifest.name || !manifest.version || !manifest.serverEntry) {
-            console.warn(`Invalid manifest for plugin ${folder}: missing required fields`)
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
+          if (!manifest.name || !manifest.version) {
+            console.warn(`Invalid manifest for plugin ${folder}: missing name or version`)
             continue
           }
-
-          const setupPath = path.join(pluginDir, folder, manifest.serverEntry)
-          if (!fs.existsSync(setupPath)) {
-            console.warn(`Server entry file not found for plugin ${folder}`)
-            continue
+          if (manifest.serverEntry) {
+            const serverEntryPath = path.join(pluginDir, folder, manifest.serverEntry)
+            const serverModule = await import(serverEntryPath)
+            if (typeof serverModule.default === 'function') {
+              await serverModule.default(fastify)
+              console.log(`Loaded plugin: ${manifest.name}`)
+            } else {
+              console.warn(`Plugin ${manifest.name} has no default export in server entry`)
+            }
+          } else {
+            console.log(`Plugin ${manifest.name} has no server-side component`)
           }
-
-          const pluginModule = await import(setupPath)
-          if (typeof pluginModule.default !== 'function') {
-            console.error(`Plugin ${folder} does not export a default function`)
-            console.error('Exported module:', pluginModule)
-            continue
-          }
-
-          this.plugins.push({ ...manifest, setup: pluginModule.default })
-          console.log(`Plugin ${manifest.name} loaded successfully`)
         } catch (error) {
           console.error(`Error loading plugin ${folder}:`, error)
         }
