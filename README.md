@@ -1,4 +1,4 @@
-# Dynamic Plugin System
+# Vue + Vite / Dynamic Plugin System
 
 ## Overview
 
