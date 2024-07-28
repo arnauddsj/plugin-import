@@ -1,4 +1,4 @@
-# Vue + Vite / Dynamic Plugin System
+# Vite vue / A Dynamic Plugin System for Vue3, Vite and a fastify server
 
 ## Overview
 
