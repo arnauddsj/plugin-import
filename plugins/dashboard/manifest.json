@@ -5,7 +5,7 @@
   "routes": [
     {
       "path": "/dashboard",
-      "component": "Dashboard.vue"
+      "component": "src/components/Dashboard.vue"
     }
   ]
 }

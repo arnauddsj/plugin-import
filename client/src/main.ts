@@ -7,13 +7,12 @@ import { PluginLoader } from './pluginLoader'
 const app = createApp(App)
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes: routes  // Use the imported routes
 })
 
 app.use(router)
 
 const pluginLoader = new PluginLoader()
-
-pluginLoader.loadPlugins(app).then(() => {
+pluginLoader.loadPlugins(app, router).then(() => {
   app.mount('#app')
 })

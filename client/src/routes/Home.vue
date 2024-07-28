@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent } from "vue";
+import { ref, onMounted } from "vue";
 
 interface Asset {
   id: number;
@@ -9,11 +9,6 @@ interface Asset {
 
 const assets = ref<Asset[]>([]);
 const newAsset = ref({ name: "", type: "" });
-
-// Dynamically import the AdvancedSearch component
-const AdvancedSearch = defineAsyncComponent(
-  () => import("@plugins/advanced-search/AdvancedSearch.vue")
-);
 
 onMounted(async () => {
   const response = await fetch("http://localhost:3000");
