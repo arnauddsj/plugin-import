@@ -3,6 +3,7 @@ import { App } from 'vue'
 interface Plugin {
   name: string
   version: string
+  clientEntry: string
   setup: (app: App) => void
 }
 
@@ -15,7 +16,10 @@ export class PluginLoader {
     for (const path in pluginContext) {
       const manifest = await pluginContext[path]() as Plugin
       const setupPath = `/../../plugins/${manifest.name}/${manifest.clientEntry}`
-      const { default: setup } = await import(setupPath)
+      const { default: setup } = await import(
+        /* @vite-ignore */
+        setupPath
+      )
       this.plugins.push({ ...manifest, setup })
     }
 
