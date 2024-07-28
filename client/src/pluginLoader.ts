@@ -82,8 +82,8 @@ export class PluginLoader {
             const componentPath = `../../plugins/${pluginName}/components/${componentName}.vue`
             const componentModule = componentModules[componentPath]
             if (componentModule) {
-              const module = await componentModule()
-              app.component(componentName, module.default as Component)
+              const module = await componentModule() as { default: Component }
+              app.component(componentName, module.default)
               console.log(`Registered component: ${componentName}`)
             } else {
               console.warn(`Component module not found: ${componentPath}`)

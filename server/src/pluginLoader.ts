@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url'
 import { FastifyInstance } from 'fastify'
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 interface Plugin {
   name: string

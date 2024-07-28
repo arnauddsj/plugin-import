@@ -23,6 +23,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+nav {
+  display: flex;
+  gap: 10px;
+}
 .loading {
   position: fixed;
   top: 0;

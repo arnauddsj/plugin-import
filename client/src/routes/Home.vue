@@ -32,7 +32,7 @@ const addAsset = async () => {
 
 <template>
   <div>
-    <h1>Damvia Asset Manager</h1>
+    <h1>Asset Manager</h1>
 
     <h2>Assets</h2>
     <ul>
