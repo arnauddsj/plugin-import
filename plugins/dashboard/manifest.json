@@ -1,0 +1,11 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "clientEntry": "client.ts",
+  "routes": [
+    {
+      "path": "/dashboard",
+      "component": "Dashboard.vue"
+    }
+  ]
+}
