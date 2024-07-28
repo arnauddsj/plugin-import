@@ -16,7 +16,7 @@ interface PluginManifest {
 export class PluginLoader {
   private plugins: PluginManifest[] = []
 
-  async loadPlugins(app: App, router: Router) {
+  async loadPlugins(app: App, router: Router): Promise<void> {
     const pluginRegistry = await import('./pluginRegistry.json')
 
     const manifestModules = import.meta.glob('../../plugins/*/manifest.json')
@@ -24,6 +24,8 @@ export class PluginLoader {
     const componentModules = import.meta.glob('../../plugins/**/components/*.vue')
 
     console.log('Available component modules:', Object.keys(componentModules))
+
+    const loadPromises: Promise<void>[] = []
 
     for (const pluginName of pluginRegistry.plugins) {
       const manifestPath = `../../plugins/${pluginName}/manifest.json`
@@ -33,60 +35,66 @@ export class PluginLoader {
         continue
       }
 
-      const manifest = await manifestModule() as { default: PluginManifest }
-      this.plugins.push(manifest.default)
+      const loadPluginPromise = (async () => {
+        const manifest = await manifestModule() as { default: PluginManifest }
+        this.plugins.push(manifest.default)
 
-      const clientPath = `../../plugins/${pluginName}/${manifest.default.clientEntry}`
-      const clientModule = clientModules[clientPath]
-      if (clientModule) {
-        const { setup } = await clientModule() as { setup: (app: App) => void }
-        setup(app)
-      }
+        const clientPath = `../../plugins/${pluginName}/${manifest.default.clientEntry}`
+        const clientModule = clientModules[clientPath]
+        if (clientModule) {
+          const { setup } = await clientModule() as { setup: (app: App) => void }
+          setup(app)
+        }
 
-      // Register routes if the plugin has any
-      if (manifest.default.routes) {
-        for (const route of manifest.default.routes) {
-          const possiblePaths = [
-            `../../plugins/${pluginName}/${route.component}`,
-            `../../plugins/${pluginName}/src/${route.component}`,
-            `../../plugins/${pluginName}/components/${route.component}`,
-          ]
+        // Register routes if the plugin has any
+        if (manifest.default.routes) {
+          for (const route of manifest.default.routes) {
+            const possiblePaths = [
+              `../../plugins/${pluginName}/${route.component}`,
+              `../../plugins/${pluginName}/src/${route.component}`,
+              `../../plugins/${pluginName}/components/${route.component}`,
+            ]
 
-          let componentPath = possiblePaths.find(path => componentModules[path])
+            let componentPath = possiblePaths.find(path => componentModules[path])
 
-          console.log(`Trying to load component from: ${componentPath}`)
+            console.log(`Trying to load component from: ${componentPath}`)
 
-          if (componentPath && componentModules[componentPath]) {
-            const newRoute: RouteRecordRaw = {
-              path: route.path,
-              component: () => componentModules[componentPath!]().then(m => m.default as Component)
+            if (componentPath && componentModules[componentPath]) {
+              const newRoute: RouteRecordRaw = {
+                path: route.path,
+                component: () => componentModules[componentPath!]().then(m => m.default as Component)
+              }
+              router.addRoute(newRoute)
+              console.log(`Added route: ${route.path}`)
+            } else {
+              console.warn(`Component not found: ${route.component}`)
+              console.log('Available paths:', Object.keys(componentModules))
             }
-            router.addRoute(newRoute)
-            console.log(`Added route: ${route.path}`)
-          } else {
-            console.warn(`Component not found: ${route.component}`)
-            console.log('Available paths:', Object.keys(componentModules))
           }
         }
-      }
 
-      // Register components if the plugin has any
-      if (manifest.default.components) {
-        for (const componentName of manifest.default.components) {
-          const componentPath = `../../plugins/${pluginName}/components/${componentName}.vue`
-          const componentModule = componentModules[componentPath]
-          if (componentModule) {
-            componentModule().then(module => {
+        // Register components if the plugin has any
+        if (manifest.default.components) {
+          for (const componentName of manifest.default.components) {
+            const componentPath = `../../plugins/${pluginName}/components/${componentName}.vue`
+            const componentModule = componentModules[componentPath]
+            if (componentModule) {
+              const module = await componentModule()
               app.component(componentName, module.default as Component)
               console.log(`Registered component: ${componentName}`)
-            })
-          } else {
-            console.warn(`Component module not found: ${componentPath}`)
+            } else {
+              console.warn(`Component module not found: ${componentPath}`)
+            }
           }
         }
-      }
+      })()
+
+      loadPromises.push(loadPluginPromise)
     }
 
+    await Promise.all(loadPromises)
+
+    console.log('All plugins loaded')
     console.log('Registered routes:', router.getRoutes())
   }
 }
