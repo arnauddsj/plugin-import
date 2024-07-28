@@ -32,6 +32,7 @@
     "src/types/**/*.d.ts",
     "../plugins/**/*.ts",
     "../plugins/**/*.tsx",
-    "../plugins/**/*.vue"
+    "../plugins/**/*.vue",
+    "src/routes /**/*.vue"
   ]
 }
