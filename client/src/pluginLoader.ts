@@ -15,8 +15,11 @@ interface PluginManifest {
 
 export class PluginLoader {
   private plugins: PluginManifest[] = []
+  public loaded: boolean = false
 
   async loadPlugins(app: App, router: Router): Promise<void> {
+    if (this.loaded) return
+
     const pluginRegistry = await import('./pluginRegistry.json')
 
     const manifestModules = import.meta.glob('../../plugins/*/manifest.json')
@@ -93,6 +96,8 @@ export class PluginLoader {
     }
 
     await Promise.all(loadPromises)
+
+    this.loaded = true
 
     console.log('All plugins loaded')
     console.log('Registered routes:', router.getRoutes())
