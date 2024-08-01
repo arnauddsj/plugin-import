@@ -1,8 +1,8 @@
 # Vite vue / A Dynamic Plugin System for Vue3, Vite and a fastify server
 
 ## Overview
+This project demonstrates how to implement a flexible plugin system in a Vue 3 application using TypeScript and Vite. The system is designed to allow for dynamic integration of commercial plugins into an open source project, extending the functionality of the core application without compromising its open-source integrity.
 
-This project demonstrates how to implement a flexible plugin system in a Vue 3 application using TypeScript and Vite. The system allows for dynamic integration of both open-source and commercial plugins, extending the functionality of the core application without compromising its open-source integrity.
 
 ## Key Features
 
